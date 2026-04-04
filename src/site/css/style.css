@@ -1,0 +1,177 @@
+/* Reset and Base Variables */
+:root {
+    --bg-color: #121212;
+    --text-main: #ededed;
+    --text-muted: #888888;
+    --accent: #4a90e2;
+    --surface-color: #1e1e1e;
+    --surface-darker: #0a0a0a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Navigation */
+header {
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover, .nav-link:focus {
+    color: var(--text-main);
+}
+
+/* Main Content Wrapper */
+main {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+/* Hero Thought Section */
+.hero-thought h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.thought-date {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Reaction Zone & Depressed Input */
+.reaction-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-darker);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    /* This creates the "depressed" look */
+    box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.input-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    opacity: 0.7;
+}
+
+.reaction-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 1rem;
+    padding: 0.8rem 0;
+    outline: none;
+}
+
+.reaction-input::placeholder {
+    color: var(--text-muted);
+}
+
+.send-btn {
+    background-color: transparent;
+    color: var(--accent);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Speech Bubbles */
+.recent-reactions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.bubble {
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-top-left-radius: 0; /* Creates the speech bubble tail effect */
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.bubble p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+}
+
+.bubble-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Archive Button */
+.archive-action {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-archive {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background-color: transparent;
+    color: var(--text-main);
+    border: 2px solid var(--surface-color);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-archive:hover {
+    background-color: var(--surface-color);
+}
