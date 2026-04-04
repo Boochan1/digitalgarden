@@ -180,53 +180,36 @@
     
         async function updateTracker() {
             if (!currentCode) return;
-    
+        
             const statusEl = document.getElementById('status');
             const listEl = document.getElementById('playerList');
-            const footerEl = document.getElementById('lastUpdated');
             
-            // Using AllOrigins proxy - it's often more stable for FiveM
-            const apiUrl = `https://servers-frontend.fivem.net/api/servers/single/${currentCode}`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-    
+            // Point this to YOUR Vercel API
+            const myApiUrl = `/api/fetchFiveM?code=${currentCode}`;
+        
             try {
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error("Proxy Error");
-                
-                const wrapper = await response.json();
-                // AllOrigins wraps the result in a "contents" string, we must parse it
-                const json = JSON.parse(wrapper.contents);
+                const response = await fetch(myApiUrl);
+                const json = await response.json();
                 
                 const data = json.Data || json;
-                if (!data || !data.players) throw new Error("No player data");
-    
                 const players = data.players || [];
-                const max = (data.vars && data.vars.sv_maxClients) ? data.vars.sv_maxClients : "??";
-    
+                const max = data.vars?.sv_maxClients || "??";
+        
                 statusEl.innerText = `Online: ${players.length} / ${max}`;
-                
                 players.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-    
-                if (players.length > 0) {
-                    listEl.innerHTML = players.map(p => `
-                        <tr>
-                            <td>${p.id}</td>
-                            <td>${p.name.substring(0, 25).replace(/</g, "&lt;")}</td>
-                            <td class="ping-cell">${p.ping}ms</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px;">No players online.</td></tr>`;
-                }
-    
-                footerEl.innerText = `Server: ${currentCode} | Updated: ${new Date().toLocaleTimeString()}`;
-    
+        
+                listEl.innerHTML = players.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.name.substring(0, 25).replace(/</g, "&lt;")}</td>
+                        <td class="ping-cell">${p.ping}ms</td>
+                    </tr>
+                `).join('');
+        
+                document.getElementById('lastUpdated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
+        
             } catch (err) {
-                console.error("Tracker Error:", err);
-                statusEl.innerText = "Status: API Rate Limited";
-                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#ff5555;">
-                    FiveM is blocking the connection. <br> Wait 2 minutes and try again.
-                </td></tr>`;
+                statusEl.innerText = "Status: API Offline";
             }
         }
     
