@@ -196,8 +196,10 @@
                 const max = data.vars?.sv_maxClients || "??";
         
                 statusEl.innerText = `Online: ${players.length} / ${max}`;
-                players.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-        
+                // Sort by ID numerically (Low to High)
+                players.sort((a, b) => {
+                    return parseInt(a.id) - parseInt(b.id);
+                });
                 listEl.innerHTML = players.map(p => `
                     <tr>
                         <td>${p.id}</td>
