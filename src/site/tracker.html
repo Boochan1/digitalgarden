@@ -17,26 +17,40 @@
             --border-color: #3f3f3f;
             --success-green: #50fa7b;
         }
-
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
             margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertical Center */
+            align-items: center;     /* Horizontal Center */
+            height: 100vh;           /* Fill the iframe height */
+            overflow: hidden;        /* Prevent double scrollbars */
         }
-
+        
         .monitor-card {
             background-color: var(--container-bg);
-            width: 100%;
-            max-width: 500px;
+            width: 90%;              /* Responsive width */
+            max-width: 500px;        /* Matches your Python GUI width */
+            height: auto;            /* Let it grow with the player list */
+            max-height: 90%;         /* Don't let it cut off the edges */
             border-radius: 10px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
         }
+
+/* Ensure the table stays scrollable inside the card */
+.table-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
 
         h1 {
             font-size: 22px;
