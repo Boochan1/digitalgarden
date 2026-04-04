@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Robin's Space") }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">Projects</a>
+            <a href="/archive" class="nav-link">Archive</a>
+        </nav>
+    </header>
+
+    <main>
+        {{ content | safe }}
+    </main>
+
+</body>
+</html>
