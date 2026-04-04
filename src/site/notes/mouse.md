@@ -1,6 +1,6 @@
 ---
-{"dg-publish":true,"permalink":"/mouse/","dg-note-properties":{}}
+{"dg-publish":true,"permalink":"/mouse/","tags":["thoughts"],"dg-note-properties":{"tags":"thoughts"}}
 ---
 
 
-![blindmouse1.png](/img/user/blindmouse1.png)
+# Tfdsfd
