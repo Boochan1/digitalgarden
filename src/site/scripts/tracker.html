@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FiveM Server Monitor</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --container-bg: #2b2b2b;
+            --input-bg: #1e1e1e;
+            --text-main: #ebebeb;
+            --text-dim: #919191;
+            --accent-blue: #1f538d;
+            --accent-hover: #14375e;
+            --border-color: #3f3f3f;
+            --success-green: #50fa7b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .monitor-card {
+            background-color: var(--container-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Input Section */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        input {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            width: 120px;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+        }
+
+        button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        .status-bar {
+            background: #212121;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            color: var(--accent-blue);
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #333;
+            text-align: left;
+            color: var(--text-dim);
+            padding: 10px 5px;
+            z-index: 1;
+        }
+
+        td {
+            padding: 10px 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ping-cell {
+            text-align: right;
+            color: var(--success-green);
+        }
+
+        .footer {
+            margin-top: 15px;
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* Custom Scrollbar */
+        .table-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="monitor-card">
+        <h1>FiveM Player Tracker</h1>
+
+        <div class="controls">
+            <input type="text" id="serverInput" placeholder="Code (e.g. l9yp9v)" maxlength="6">
+            <button onclick="changeServer()">Switch Server</button>
+        </div>
+
+        <div id="status" class="status-bar">Enter a code to start</div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">ID</th>
+                        <th width="65%">Player Name</th>
+                        <th width="20%" style="text-align: right;">Ping</th>
+                    </tr>
+                </thead>
+                <tbody id="playerList">
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding:20px; color:#666;">No server selected.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer" id="lastUpdated">Waiting for input...</div>
+    </div>
+
+    <script>
+        let currentCode = "l9yp9v"; // Default code
+        let refreshInterval = null;
+
+        const PROXY_URL = "https://corsproxy.io/?";
+
+        async function updateTracker() {
+            if (!currentCode) return;
+
+            const statusEl = document.getElementById('status');
+            const listEl = document.getElementById('playerList');
+            const footerEl = document.getElementById('lastUpdated');
+            const apiUrl = `https://servers-frontend.fivem.net/api/servers/single/${currentCode}`;
+
+            try {
+                const response = await fetch(PROXY_URL + encodeURIComponent(apiUrl));
+                const json = await response.json();
+
+                if (!json.Data) throw new Error("Invalid Code");
+
+                const data = json.Data;
+                const players = data.players || [];
+                const max = data.vars.sv_maxClients || "??";
+
+                statusEl.innerText = `Online: ${players.length} / ${max}`;
+
+                // Sort by ID
+                players.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+                if (players.length > 0) {
+                    listEl.innerHTML = players.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.name.substring(0, 25).replace(/</g, "&lt;")}</td>
+                        <td class="ping-cell">${p.ping}ms</td>
+                    </tr>
+                `).join('');
+                } else {
+                    listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px;">No players online.</td></tr>`;
+                }
+
+                footerEl.innerText = `Server: ${currentCode} | Last updated: ${new Date().toLocaleTimeString()}`;
+
+            } catch (err) {
+                statusEl.innerText = "Status: Error (Check Code)";
+                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#ff5555;">Could not find server.</td></tr>`;
+            }
+        }
+
+        function changeServer() {
+            const input = document.getElementById('serverInput').value.trim().toLowerCase();
+            if (input.length === 6) {
+                currentCode = input;
+                document.getElementById('status').innerText = "Refreshing...";
+                updateTracker();
+
+                // Reset interval so it starts the 60s count fresh for the new server
+                clearInterval(refreshInterval);
+                refreshInterval = setInterval(updateTracker, 60000);
+            } else {
+                alert("Please enter a valid 6-digit FiveM code.");
+            }
+        }
+
+        // Initial Start
+        document.getElementById('serverInput').value = currentCode;
+        updateTracker();
+        refreshInterval = setInterval(updateTracker, 60000);
+    </script>
+
+</body>
+
+</html>
