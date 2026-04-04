@@ -9,12 +9,19 @@
 </head>
 <body>
     <header>
-        <nav>
-            <a href="/" class="nav-link">Home</a>
-            <a href="/projects" class="nav-link">Projects</a>
-            <a href="/archive" class="nav-link">Archive</a>
-        </nav>
-    </header>
+            <div class="header-left">
+                </div>
+            
+            <nav>
+                <a href="/" class="nav-link">Home</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/archive" class="nav-link">Archive</a>
+            </nav>
+    
+            <div class="header-right">
+                <img src="/img/blindmouse1.jpg" alt="Blindmouse Avatar" class="nav-avatar">
+            </div>
+        </header>
 
     <main>
         {{ content | safe }}
