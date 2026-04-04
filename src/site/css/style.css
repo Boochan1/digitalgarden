@@ -202,3 +202,51 @@ main {
 .btn-archive:hover {
     background-color: var(--surface-color);
 }
+
+/* --- Projects Page --- */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    width: 100%;
+}
+
+.project-card {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.project-card:hover {
+    transform: translateY(-5px); /* Creates a slight lifting effect */
+    border-color: var(--surface-darker);
+    background-color: #252525; /* Slightly lighter on hover */
+}
+
+.project-card h2 {
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+.project-card p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.5;
+    flex-grow: 1; /* Pushes the date to the bottom */
+}
+
+.project-date {
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
