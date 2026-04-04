@@ -5,16 +5,16 @@ title: Home
 
 {% set latestThought = collections.thoughts | last %}
 
-<section class="hero-thought">
-    <div class="thought-content">
-        {% if latestThought %}
-            {{ latestThought.content | safe }}
-            
-            <p class="thought-date">{{ latestThought.date | readableDate }}</p>
-        {% else %}
-            <h1>Publish a note with the tag "thoughts" in Obsidian to see it here.</h1>
-        {% endif %}
-    </div>
+<section class="reaction-zone" style="width: 100%; margin-top: 2rem;">
+    <div id="cusdis_thread"
+      data-host="https://cusdis.com"
+      data-app-id="4389d248-f290-48a7-9aed-55511f2e8471"
+      data-page-id="{{ latestThought.fileSlug }}"
+      data-page-url="https://blindmouse.au/archive/{{ latestThought.fileSlug }}"
+      data-page-title="{{ latestThought.date | readableDate }}"
+      data-theme="dark"
+    ></div>
+    <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 </section>
 
 <section class="reaction-zone">
