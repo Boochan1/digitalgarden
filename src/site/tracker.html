@@ -1,256 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    :root {
+        --bg-color: #1a1a1a;
+        --container-bg: #2b2b2b;
+        --input-bg: #1e1e1e;
+        --text-main: #ebebeb;
+        --text-dim: #919191;
+        --accent-blue: #1f538d;
+        --accent-hover: #14375e;
+        --border-color: #3f3f3f;
+        --success-green: #50fa7b;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FiveM Server Monitor</title>
-    <style>
-        :root {
-            --bg-color: #1a1a1a;
-            --container-bg: #2b2b2b;
-            --input-bg: #1e1e1e;
-            --text-main: #ebebeb;
-            --text-dim: #919191;
-            --accent-blue: #1f538d;
-            --accent-hover: #14375e;
-            --border-color: #3f3f3f;
-            --success-green: #50fa7b;
-        }
-        body {
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            
-            /* These four lines are the magic for centering */
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Vertical Center */
-            align-items: center;     /* Horizontal Center */
-            min-height: 100vh;       /* Force background to be full screen height */
-            
-            color: var(--text-main);
-            font-family: 'Roboto', sans-serif;
-        }
+    body {
+        background-color: var(--bg-color);
+        margin: 0;
+        padding: 0;
+        /* Layout logic for centering */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
         
-        .monitor-card {
-            background-color: var(--container-bg);
-            width: 95%;
-            max-width: 550px; /* Slightly wider looks better on desktop */
-            
-            /* This ensures the card doesn't hit the very top/bottom of the screen */
-            margin: 20px auto; 
-            
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            border: 1px solid var(--border-color);
-        }
+        /* Font Reversion */
+        color: var(--text-main);
+        font-family: 'Roboto', 'Segoe UI', sans-serif;
+    }
 
-/* Ensure the table stays scrollable inside the card */
-.table-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-top: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
-}
+    .monitor-card {
+        background-color: var(--container-bg);
+        width: 95%;
+        max-width: 500px;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border: 1px solid var(--border-color);
+    }
 
-        h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+    h1 { font-size: 22px; text-align: center; margin-bottom: 20px; }
 
-        /* Input Section */
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
+    .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
 
-        input {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            width: 120px;
-            text-align: center;
-            font-family: 'Consolas', monospace;
-        }
+    input {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        width: 120px;
+        text-align: center;
+        /* Reverted to Monospace */
+        font-family: 'Consolas', 'Courier New', monospace;
+    }
 
-        button {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
+    button {
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: sans-serif;
+    }
 
-        button:hover {
-            background: var(--accent-hover);
-        }
+    .status-bar {
+        background: #212121;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        color: var(--accent-blue);
+    }
 
-        .status-bar {
-            background: #212121;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            color: var(--accent-blue);
-        }
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+    }
 
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        /* Reverted to Monospace for the player list */
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 13px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: 'Consolas', monospace;
-            font-size: 13px;
-        }
+    th {
+        position: sticky;
+        top: 0;
+        background: #333;
+        text-align: left;
+        color: var(--text-dim);
+        padding: 10px 5px;
+    }
 
-        th {
-            position: sticky;
-            top: 0;
-            background: #333;
-            text-align: left;
-            color: var(--text-dim);
-            padding: 10px 5px;
-            z-index: 1;
-        }
+    td {
+        padding: 10px 5px;
+        border-bottom: 1px solid var(--border-color);
+    }
 
-        td {
-            padding: 10px 5px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .ping-cell {
-            text-align: right;
-            color: var(--success-green);
-        }
-
-        .footer {
-            margin-top: 15px;
-            font-size: 11px;
-            color: var(--text-dim);
-            text-align: center;
-        }
-
-        /* Custom Scrollbar */
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .table-container::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 10px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="monitor-card">
-        <h1>FiveM Player Tracker</h1>
-
-        <div class="controls">
-            <input type="text" id="serverInput" placeholder="Code (e.g. l9yp9v)" maxlength="6">
-            <button onclick="changeServer()">Switch Server</button>
-        </div>
-
-        <div id="status" class="status-bar">Enter a code to start</div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th width="15%">ID</th>
-                        <th width="65%">Player Name</th>
-                        <th width="20%" style="text-align: right;">Ping</th>
-                    </tr>
-                </thead>
-                <tbody id="playerList">
-                    <tr>
-                        <td colspan="3" style="text-align:center; padding:20px; color:#666;">No server selected.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="footer" id="lastUpdated">Waiting for input...</div>
-    </div>
-
-    <script>
-        let currentCode = "l9yp9v"; // Default code
-        let refreshInterval = null;
+    .ping-cell { text-align: right; color: var(--success-green); }
     
-        async function updateTracker() {
-            if (!currentCode) return;
-        
-            const statusEl = document.getElementById('status');
-            const listEl = document.getElementById('playerList');
-            
-            // Point this to YOUR Vercel API
-            const myApiUrl = `/api/fetchFiveM?code=${currentCode}`;
-        
-            try {
-                const response = await fetch(myApiUrl);
-                const json = await response.json();
-                
-                const data = json.Data || json;
-                const players = data.players || [];
-                const max = data.vars?.sv_maxClients || "??";
-        
-                statusEl.innerText = `Online: ${players.length} / ${max}`;
-                // Sort by ID numerically (Low to High)
-                players.sort((a, b) => {
-                    return parseInt(a.id) - parseInt(b.id);
-                });
-                listEl.innerHTML = players.map(p => `
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.name.substring(0, 25).replace(/</g, "&lt;")}</td>
-                        <td class="ping-cell">${p.ping}ms</td>
-                    </tr>
-                `).join('');
-        
-                document.getElementById('lastUpdated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
-        
-            } catch (err) {
-                statusEl.innerText = "Status: API Offline";
-            }
-        }
-    
-        function changeServer() {
-            const input = document.getElementById('serverInput').value.trim().toLowerCase();
-            if (input.length === 6) {
-                currentCode = input;
-                document.getElementById('status').innerText = "Switching...";
-                updateTracker();
-                clearInterval(refreshInterval);
-                refreshInterval = setInterval(updateTracker, 60000);
-            } else {
-                alert("Enter a 6-digit code.");
-            }
-        }
-    
-        document.getElementById('serverInput').value = currentCode;
-        updateTracker();
-        refreshInterval = setInterval(updateTracker, 60000);
-    </script>
-
-</body>
-
-</html>
+    .footer {
+        margin-top: 15px;
+        font-size: 11px;
+        color: var(--text-dim);
+        text-align: center;
+        font-family: sans-serif;
+    }
+</style>
