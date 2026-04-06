@@ -10,7 +10,7 @@ date: 2026-04-05
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FiveM Server Monitor</title>
+    <title>FiveM Server Monitor | blindmouse.au</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -22,12 +22,13 @@ date: 2026-04-05
             --accent-hover: #14375e;
             --border-color: #3f3f3f;
             --success-green: #50fa7b;
+            --error-red: #ff5555;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             padding: 20px;
@@ -44,9 +45,19 @@ date: 2026-04-05
             border: 1px solid var(--border-color);
         }
 
-        h1 { font-size: 22px; text-align: center; margin-bottom: 20px; }
+        h1 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
 
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
 
         input {
             background: var(--input-bg);
@@ -54,10 +65,13 @@ date: 2026-04-05
             color: white;
             padding: 8px 12px;
             border-radius: 5px;
-            width: 120px;
+            width: 140px;
             text-align: center;
             font-family: 'Consolas', monospace;
+            outline: none;
         }
+
+        input:focus { border-color: var(--accent-blue); }
 
         button {
             background: var(--accent-blue);
@@ -84,10 +98,11 @@ date: 2026-04-05
         }
 
         .table-container {
-            max-height: 400px;
+            max-height: 450px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: 5px;
+            background: #222;
         }
 
         table {
@@ -103,19 +118,33 @@ date: 2026-04-05
             background: #333;
             text-align: left;
             color: var(--text-dim);
-            padding: 10px 5px;
+            padding: 10px 8px;
             z-index: 1;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        td { padding: 10px 5px; border-bottom: 1px solid var(--border-color); }
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-        .ping-cell { text-align: right; color: var(--success-green); }
+        .ping-cell {
+            text-align: right;
+            color: var(--success-green);
+        }
 
         .footer {
             margin-top: 15px;
             font-size: 11px;
             color: var(--text-dim);
             text-align: center;
+        }
+
+        /* Scrollbar Styling */
+        .table-container::-webkit-scrollbar { width: 6px; }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -125,11 +154,11 @@ date: 2026-04-05
         <h1>FiveM Player Tracker</h1>
 
         <div class="controls">
-            <input type="text" id="serverInput" placeholder="Code (e.g. l9yp9v)" maxlength="6">
-            <button onclick="changeServer()">Switch Server</button>
+            <input type="text" id="serverInput" placeholder="Server Code" maxlength="6">
+            <button onclick="changeServer()">Track Server</button>
         </div>
 
-        <div id="status" class="status-bar">Refreshing...</div>
+        <div id="status" class="status-bar">Connecting to internal API...</div>
 
         <div class="table-container">
             <table>
@@ -141,20 +170,21 @@ date: 2026-04-05
                     </tr>
                 </thead>
                 <tbody id="playerList">
-                    <tr><td colspan="3" style="text-align:center; padding:20px; color:#666;">Waiting for data...</td></tr>
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding:20px; color:#666;">
+                            Initializing...
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="footer" id="lastUpdated">Initializing...</div>
+        <div class="footer" id="lastUpdated">Waiting for update...</div>
     </div>
 
     <script>
-        let currentCode = "l9yp9v"; 
+        let currentCode = "l9yp9v"; // Default server code
         let refreshInterval = null;
-
-        // Using AllOrigins raw proxy as it's often more reliable for Cfx.re calls
-        const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
         async function updateTracker() {
             if (!currentCode) return;
@@ -162,29 +192,26 @@ date: 2026-04-05
             const statusEl = document.getElementById('status');
             const listEl = document.getElementById('playerList');
             const footerEl = document.getElementById('lastUpdated');
-            const apiUrl = `https://servers-frontend.fivem.net/api/servers/single/${currentCode}`;
+
+            // Pointing to your serverless function on blindmouse.au
+            const apiEndpoint = `/api/fetchFiveM?code=${currentCode}`;
 
             try {
-                // We add a cache-buster timestamp to ensure we get fresh data
-                const targetUrl = `${apiUrl}?t=${Date.now()}`;
-                const response = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
+                const response = await fetch(apiEndpoint);
                 
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                if (!response.ok) throw new Error("Internal API Error");
 
                 const json = await response.json();
-                console.log("Server Data:", json); // Debug info in console
 
-                if (!json || !json.Data) {
-                    throw new Error("Invalid response from FiveM API");
-                }
+                if (!json || !json.Data) throw new Error("Invalid Server Data");
 
                 const data = json.Data;
                 const players = data.players || [];
-                const max = (data.vars && data.vars.sv_maxClients) || "??";
+                const maxClients = (data.vars && data.vars.sv_maxClients) || "??";
 
-                statusEl.innerText = `Online: ${players.length} / ${max}`;
-                
-                // Sort by ID
+                statusEl.innerText = `Online: ${players.length} / ${maxClients}`;
+
+                // Sort by ID (numerical)
                 players.sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
                 if (players.length > 0) {
@@ -203,8 +230,8 @@ date: 2026-04-05
 
             } catch (err) {
                 console.error("Tracker Error:", err);
-                statusEl.innerText = "Status: Error (Check Console)";
-                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#ff5555;">Failed to fetch server data.<br><small>${err.message}</small></td></tr>`;
+                statusEl.innerText = "Status: Connection Error";
+                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--error-red);">Could not reach API. Ensure fetchFiveM.js is deployed.</td></tr>`;
             }
         }
 
@@ -212,20 +239,24 @@ date: 2026-04-05
             const input = document.getElementById('serverInput').value.trim().toLowerCase();
             if (input.length === 6) {
                 currentCode = input;
-                document.getElementById('status').innerText = "Refreshing...";
+                document.getElementById('status').innerText = "Switching...";
                 updateTracker();
 
+                // Restart interval
                 clearInterval(refreshInterval);
                 refreshInterval = setInterval(updateTracker, 60000);
             } else {
-                alert("Please enter a valid 6-digit FiveM code.");
+                alert("Please enter a valid 6-digit FiveM server code.");
             }
         }
 
         // Setup UI and initial load
         document.getElementById('serverInput').value = currentCode;
         updateTracker();
+        
+        // Refresh every 60 seconds
         refreshInterval = setInterval(updateTracker, 60000);
     </script>
+
 </body>
 </html>
