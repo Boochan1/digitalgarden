@@ -17,19 +17,22 @@
             --success-green: #50fa7b;
             --error-red: #ff5555;
         }
-
+/* Change the body background to transparent */
         body {
-            background-color: var(--bg-color);
+            background-color: transparent; /* This lets the Quartz background show through */
             color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 0; /* Reduced padding to fit better in the iframe */
             margin: 0;
         }
-
+        
+        /* Optional: If you want the card to blend in perfectly, 
+           set its background to match Quartz's dark mode exactly. 
+           Usually Quartz uses #161617 or #111111 */
         .monitor-card {
-            background-color: var(--container-bg);
+            background-color: #161617; /* Adjust this hex to match your Quartz theme */
             width: 100%;
             max-width: 500px;
             border-radius: 10px;
@@ -37,7 +40,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
         }
-
         h1 {
             font-size: 22px;
             text-align: center;
