@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FiveM Server Monitor</title>
+    <title>FiveM Server Monitor | blindmouse.au</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -16,12 +15,13 @@
             --accent-hover: #14375e;
             --border-color: #3f3f3f;
             --success-green: #50fa7b;
+            --error-red: #ff5555;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             padding: 20px;
@@ -42,9 +42,9 @@
             font-size: 22px;
             text-align: center;
             margin-bottom: 20px;
+            letter-spacing: 1px;
         }
 
-        /* Input Section */
         .controls {
             display: flex;
             gap: 10px;
@@ -58,10 +58,13 @@
             color: white;
             padding: 8px 12px;
             border-radius: 5px;
-            width: 120px;
+            width: 140px;
             text-align: center;
             font-family: 'Consolas', monospace;
+            outline: none;
         }
+
+        input:focus { border-color: var(--accent-blue); }
 
         button {
             background: var(--accent-blue);
@@ -74,9 +77,7 @@
             transition: background 0.2s;
         }
 
-        button:hover {
-            background: var(--accent-hover);
-        }
+        button:hover { background: var(--accent-hover); }
 
         .status-bar {
             background: #212121;
@@ -90,10 +91,11 @@
         }
 
         .table-container {
-            max-height: 400px;
+            max-height: 450px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: 5px;
+            background: #222;
         }
 
         table {
@@ -109,12 +111,13 @@
             background: #333;
             text-align: left;
             color: var(--text-dim);
-            padding: 10px 5px;
+            padding: 10px 8px;
             z-index: 1;
+            border-bottom: 1px solid var(--border-color);
         }
 
         td {
-            padding: 10px 5px;
+            padding: 10px 8px;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -130,29 +133,25 @@
             text-align: center;
         }
 
-        /* Custom Scrollbar */
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
+        /* Scrollbar Styling */
+        .table-container::-webkit-scrollbar { width: 6px; }
         .table-container::-webkit-scrollbar-thumb {
             background: #444;
             border-radius: 10px;
         }
     </style>
 </head>
-
 <body>
 
     <div class="monitor-card">
         <h1>FiveM Player Tracker</h1>
 
         <div class="controls">
-            <input type="text" id="serverInput" placeholder="Code (e.g. l9yp9v)" maxlength="6">
-            <button onclick="changeServer()">Switch Server</button>
+            <input type="text" id="serverInput" placeholder="Server Code" maxlength="6">
+            <button onclick="changeServer()">Track Server</button>
         </div>
 
-        <div id="status" class="status-bar">Enter a code to start</div>
+        <div id="status" class="status-bar">Connecting to internal API...</div>
 
         <div class="table-container">
             <table>
@@ -165,20 +164,20 @@
                 </thead>
                 <tbody id="playerList">
                     <tr>
-                        <td colspan="3" style="text-align:center; padding:20px; color:#666;">No server selected.</td>
+                        <td colspan="3" style="text-align:center; padding:20px; color:#666;">
+                            Initializing...
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="footer" id="lastUpdated">Waiting for input...</div>
+        <div class="footer" id="lastUpdated">Waiting for update...</div>
     </div>
 
     <script>
-        let currentCode = "l9yp9v"; // Default code
+        let currentCode = "l9yp9v"; // Default server code
         let refreshInterval = null;
-
-        const PROXY_URL = "https://corsproxy.io/?";
 
         async function updateTracker() {
             if (!currentCode) return;
@@ -186,31 +185,36 @@
             const statusEl = document.getElementById('status');
             const listEl = document.getElementById('playerList');
             const footerEl = document.getElementById('lastUpdated');
-            const apiUrl = `https://servers-frontend.fivem.net/api/servers/single/${currentCode}`;
+
+            // Pointing to your serverless function on blindmouse.au
+            const apiEndpoint = `/api/fetchFiveM?code=${currentCode}`;
 
             try {
-                const response = await fetch(PROXY_URL + encodeURIComponent(apiUrl));
+                const response = await fetch(apiEndpoint);
+                
+                if (!response.ok) throw new Error("Internal API Error");
+
                 const json = await response.json();
 
-                if (!json.Data) throw new Error("Invalid Code");
+                if (!json || !json.Data) throw new Error("Invalid Server Data");
 
                 const data = json.Data;
                 const players = data.players || [];
-                const max = data.vars.sv_maxClients || "??";
+                const maxClients = (data.vars && data.vars.sv_maxClients) || "??";
 
-                statusEl.innerText = `Online: ${players.length} / ${max}`;
+                statusEl.innerText = `Online: ${players.length} / ${maxClients}`;
 
-                // Sort by ID
+                // Sort by ID (numerical)
                 players.sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
                 if (players.length > 0) {
                     listEl.innerHTML = players.map(p => `
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.name.substring(0, 25).replace(/</g, "&lt;")}</td>
-                        <td class="ping-cell">${p.ping}ms</td>
-                    </tr>
-                `).join('');
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.name.toString().substring(0, 25).replace(/</g, "&lt;")}</td>
+                            <td class="ping-cell">${p.ping}ms</td>
+                        </tr>
+                    `).join('');
                 } else {
                     listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px;">No players online.</td></tr>`;
                 }
@@ -218,8 +222,9 @@
                 footerEl.innerText = `Server: ${currentCode} | Last updated: ${new Date().toLocaleTimeString()}`;
 
             } catch (err) {
-                statusEl.innerText = "Status: Error (Check Code)";
-                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#ff5555;">Could not find server.</td></tr>`;
+                console.error("Tracker Error:", err);
+                statusEl.innerText = "Status: Connection Error";
+                listEl.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--error-red);">Could not reach API. Ensure fetchFiveM.js is deployed.</td></tr>`;
             }
         }
 
@@ -227,23 +232,24 @@
             const input = document.getElementById('serverInput').value.trim().toLowerCase();
             if (input.length === 6) {
                 currentCode = input;
-                document.getElementById('status').innerText = "Refreshing...";
+                document.getElementById('status').innerText = "Switching...";
                 updateTracker();
 
-                // Reset interval so it starts the 60s count fresh for the new server
+                // Restart interval
                 clearInterval(refreshInterval);
                 refreshInterval = setInterval(updateTracker, 60000);
             } else {
-                alert("Please enter a valid 6-digit FiveM code.");
+                alert("Please enter a valid 6-digit FiveM server code.");
             }
         }
 
-        // Initial Start
+        // Setup UI and initial load
         document.getElementById('serverInput').value = currentCode;
         updateTracker();
+        
+        // Refresh every 60 seconds
         refreshInterval = setInterval(updateTracker, 60000);
     </script>
 
 </body>
-
 </html>
